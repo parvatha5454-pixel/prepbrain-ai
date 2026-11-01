@@ -12,6 +12,7 @@ function outline(text: string) {
     .map(l => l.replace(/^(\d+[.)]|[-*•])\s*/, '').replace(/^(unit|chapter|module|topic)\s*[\w.-]*\s*[:\-–]?\s*/i, '').slice(0, 80)).filter(l => l.length >= 2)
   return [...new Set(t)].slice(0, 12).map(name => ({ name, weight: 3 }))
 }
+export const maxDuration = 60
 export async function POST(req: Request) {
   const userId = await getUserId()
   if (!userId) return NextResponse.json({ error: 'Not logged in' }, { status: 401 })

@@ -7,6 +7,7 @@ import { geminiJSON } from '@/lib/gemini'
 const Q = z.object({ prompt: z.string().min(10).max(400), options: z.array(z.string().min(1).max(120)).min(2).max(4), answer: z.string().min(1).max(120),
   explanation: z.string().min(10).max(400), difficulty: z.number().int().min(1).max(3), tag: z.string().regex(/^[a-z0-9-]{3,40}$/) })
   .refine(q => q.options.includes(q.answer) && new Set(q.options).size === q.options.length)
+export const maxDuration = 60
 export async function POST(req: Request) {
   const userId = await getUserId()
   if (!userId) return NextResponse.json({ error: 'Not logged in' }, { status: 401 })

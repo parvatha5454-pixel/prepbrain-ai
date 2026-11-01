@@ -5,6 +5,7 @@ import { getUserId } from '@/lib/auth'
 import { db } from '@/lib/db'
 const body = z.object({ assessmentId: z.string(),
   answers: z.array(z.object({ questionId: z.string(), given: z.string().max(500), responseMs: z.number().int().min(0) })).min(1).max(50) })
+export const maxDuration = 60
 export async function POST(req: Request) {
   const userId = await getUserId()
   if (!userId) return NextResponse.json({ error: 'Not logged in' }, { status: 401 })

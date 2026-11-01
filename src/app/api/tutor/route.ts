@@ -5,6 +5,7 @@ import { getUserId } from '@/lib/auth'
 import { geminiJSON } from '@/lib/gemini'
 import { offlineReply } from '@/lib/tutorFallback'
 const body = z.object({ message: z.string().trim().min(1, 'Type a question').max(1000), mode: z.enum(['BEGINNER', 'SIMPLE', 'DETAILED', 'EXAMPLE']) })
+export const maxDuration = 60
 export async function POST(req: Request) {
   const userId = await getUserId()
   if (!userId) return NextResponse.json({ error: 'Not logged in' }, { status: 401 })

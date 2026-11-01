@@ -78,14 +78,21 @@ User, Subject, Topic, Question, Assessment, StudentAnswer, LearnerProfile, Topic
 - In production the app refuses to run without `AUTH_SECRET`.
 
 ## Deploying (Vercel + PostgreSQL)
-SQLite files do not persist on serverless hosting, so use Postgres in production.
-1. Push the project to GitHub. `.gitignore` already excludes `.env` and `*.db`. Never commit keys.
-2. Create a free Postgres database (Neon, Supabase or Vercel Postgres) and copy its connection string.
-3. In `prisma/schema.prisma` change `provider = "sqlite"` to `provider = "postgresql"`.
-4. In `package.json` scripts add: `"postinstall": "prisma generate"`.
-5. Locally, set `DATABASE_URL` in `.env` to the Postgres URL, then run `npx prisma db push` and `npm run seed` to create tables, questions and the demo account.
-6. In Vercel: import the repo and set environment variables `DATABASE_URL`, `AUTH_SECRET` (a long random value, see `.env.example`), and optionally `GEMINI_API_KEY`.
-7. Deploy, then test in an Incognito window: register, take a quiz, logout, login.
+SQLite files do not persist on serverless hosting, so production uses Postgres. The repo keeps both schemas: `prisma/schema.prisma` (SQLite, local dev) and `prisma/schema.postgres.prisma` (production). `vercel.json` makes Vercel build with the Postgres schema, so local development is not affected.
+1. Push the project to GitHub. `.gitignore` excludes `.env` and `*.db`. Never commit keys.
+2. Create a free Postgres database (Neon, Supabase or Vercel Postgres) and copy its connection string (it should end with `?sslmode=require`).
+3. Create the tables and seed the demo data from your machine (PowerShell, dev server stopped):
+```powershell
+$env:DATABASE_URL="postgresql://USER:PASSWORD@HOST/DB?sslmode=require"
+npx prisma@5.22.0 generate --schema prisma/schema.postgres.prisma
+npx prisma@5.22.0 db push --schema prisma/schema.postgres.prisma
+npm run seed
+Remove-Item Env:DATABASE_URL
+npx prisma@5.22.0 generate      # restores the local SQLite client
+```
+4. In Vercel: import the GitHub repo and set environment variables `DATABASE_URL` (the Postgres string), `AUTH_SECRET` (long random value, see `.env.example`), and optionally `GEMINI_API_KEY`.
+5. Deploy, then test in an Incognito window: demo login, take a quiz, logout, login.
+Routes that call Gemini set `maxDuration = 60` so they are not cut off by the default 10 second serverless limit.
 
 ## Known limitations (honest list)
 - Reading a PDF syllabus needs Gemini (pasted text and .txt/.md files work with a basic offline parser). PDFs are limited to 3 MB. Importance is AI-estimated from the syllabus, not a prediction of the real exam.
