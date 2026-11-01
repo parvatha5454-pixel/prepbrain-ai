@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  name String
+  passwordHash String
+  isDemo Boolean @default(false)
+  createdAt DateTime @default(now())
+  profile LearnerProfile?
+  assessments Assessment[]
+  mastery TopicMastery[]
+  mistakes MistakePattern[]
+  plans StudyPlan[]
+  activities StudyActivity[]
+  chats ChatHistory[]
+  subjects Subject[]
+}
+model Subject {
+  id String @id @default(cuid())
+  name String
+  ownerId String?
+  owner User? @relation(fields: [ownerId], references: [id])
+  syllabus String @default("")
+  topics Topic[]
+}
+model Topic {
+  id String @id @default(cuid())
+  name String
+  subjectId String
+  subject Subject @relation(fields: [subjectId], references: [id])
+  prerequisiteId String?
+  weight Int @default(3)
+  questions Question[]
+  mastery TopicMastery[]
+  @@unique([subjectId, name])
+}
+model Question {
+  id String @id @default(cuid())
+  topicId String
+  topic Topic @relation(fields: [topicId], references: [id])
+  type String
+  difficulty Int
+  prompt String
+  options String
+  answer String
+  explanation String
+  misconceptionTag String?
+  source String @default("seed")
+  answers StudentAnswer[]
+}
+model Assessment {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  kind String
+  subjectId String
+  difficulty Int
+  startedAt DateTime @default(now())
+  completedAt DateTime?
+  score Float?
+  answers StudentAnswer[]
+}
+model StudentAnswer {
+  id String @id @default(cuid())
+  assessmentId String
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  questionId String
+  question Question @relation(fields: [questionId], references: [id])
+  userId String
+  given String
+  correct Boolean
+  responseMs Int
+  attempt Int @default(1)
+  createdAt DateTime @default(now())
+  @@index([userId, createdAt])
+}
+model LearnerProfile {
+  id String @id @default(cuid())
+  userId String @unique
+  user User @relation(fields: [userId], references: [id])
+  overallMastery Float @default(0)
+  streak Int @default(0)
+  studyMinutes Int @default(0)
+  nextAction String?
+  updatedAt DateTime @updatedAt
+}
+model TopicMastery {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  topicId String
+  topic Topic @relation(fields: [topicId], references: [id])
+  score Float @default(0)
+  attempts Int @default(0)
+  currentDifficulty Int @default(1)
+  prevScore Float?
+  lastPracticedAt DateTime @default(now())
+  @@unique([userId, topicId])
+}
+model MistakePattern {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  topicId String
+  tag String
+  count Int @default(1)
+  lastSeenAt DateTime @default(now())
+  @@unique([userId, topicId, tag])
+}
+model StudyPlan {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  generatedAt DateTime @default(now())
+  tasks StudyTask[]
+}
+model StudyTask {
+  id String @id @default(cuid())
+  planId String
+  plan StudyPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  topicId String
+  title String
+  reason String
+  priority Int
+  dueDay Int
+  done Boolean @default(false)
+}
+model StudyActivity {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  type String
+  detail String
+  minutes Int @default(0)
+  createdAt DateTime @default(now())
+}
+model ChatHistory {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  role String
+  mode String @default("SIMPLE")
+  content String
+  createdAt DateTime @default(now())
+}

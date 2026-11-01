@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+html { color-scheme: dark; scroll-behavior: smooth; }
+body { color: #e9e7ff; font-family: Inter, system-ui, sans-serif; min-height: 100vh;
+  background: radial-gradient(1100px 600px at 8% -10%, rgba(139,92,246,.20), transparent), radial-gradient(900px 500px at 100% 0%, rgba(34,211,238,.10), transparent), #0b1026; background-attachment: fixed; }
+.glass { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.10); backdrop-filter: blur(12px); border-radius: 1rem; }
+.shimmer { background: linear-gradient(90deg, rgba(255,255,255,.04), rgba(255,255,255,.10), rgba(255,255,255,.04)); background-size: 200% 100%; animation: sh 1.4s infinite; border-radius: 1rem; }
+@keyframes sh { to { background-position: -200% 0; } }
+::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 8px; }
+
+@media print {
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+  .print-area { position: absolute; left: 0; top: 0; width: 100%; color: #111; background: #fff !important; border: none; backdrop-filter: none; }
+  body { background: #fff !important; }
+  .no-print { display: none !important; }
+  @page { margin: 12mm; }
+}
